@@ -86,11 +86,9 @@ P.S. You can delete this when you're done too. It's your config now! :)
 --
 -- Detect if we're on NixOS
 local function is_nixos()
-  return vim.fn.filereadable('/etc/NIXOS') == 1 or
-      vim.fn.filereadable('/etc/os-release') == 1 and
-      vim.fn.system('grep -q "ID=nixos" /etc/os-release 2>/dev/null') == ""
+  return vim.fn.isdirectory('/etc/nixos') == 1 or
+         vim.fn.isdirectory('/nix/var/nix/profiles/system') == 1
 end
-
 local use_mason = not is_nixos()
 
 
