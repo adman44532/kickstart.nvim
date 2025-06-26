@@ -219,6 +219,16 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = { 'typescript', 'javascript', 'typescriptreact', 'javascriptreact' },
+  callback = function()
+    vim.opt_local.expandtab = true
+    vim.opt_local.tabstop = 2
+    vim.opt_local.shiftwidth = 2
+    vim.opt_local.softtabstop = 2
+  end,
+})
+
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
@@ -261,16 +271,16 @@ require('lazy').setup({
     end,
   },
   {
-  "luckasRanarison/tailwind-tools.nvim",
-  name = "tailwind-tools",
-  build = ":UpdateRemotePlugins",
-  dependencies = {
-    "nvim-treesitter/nvim-treesitter",
-    "nvim-telescope/telescope.nvim", -- optional
-    "neovim/nvim-lspconfig", -- optional
+    'luckasRanarison/tailwind-tools.nvim',
+    name = 'tailwind-tools',
+    build = ':UpdateRemotePlugins',
+    dependencies = {
+      'nvim-treesitter/nvim-treesitter',
+      'nvim-telescope/telescope.nvim', -- optional
+      'neovim/nvim-lspconfig', -- optional
+    },
+    opts = {}, -- your configuration
   },
-  opts = {} -- your configuration
-},
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
   -- keys can be used to configure plugin behavior/loading/etc.
@@ -720,32 +730,32 @@ require('lazy').setup({
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         -- ts_ls = {},
         --
-       
+
         lua_ls = {
           cmd = (function()
-    local candidates = {
-      "/run/current-system/sw/bin/lua-language-server", -- NixOS system
-      "/home/" .. os.getenv("USER") .. "/.nix-profile/bin/lua-language-server", -- NixOS user
-      "/usr/bin/lua-language-server", -- Most Linux distros
-      "/usr/local/bin/lua-language-server", -- macOS/manual installs
-      "lua-language-server", -- Fallback to PATH (but this will hit Mason)
-    }
-    
-    for _, path in ipairs(candidates) do
-      if path == "lua-language-server" or vim.fn.executable(path) == 1 then
-        return { path }
-      end
-    end
-    
-    return { "lua-language-server" } -- Final fallback
-  end)(),
-  settings = {
-    Lua = {
-      completion = {
-        callSnippet = 'Replace',
-      },
-    },
-  },          -- filetypes = { ... },
+            local candidates = {
+              '/run/current-system/sw/bin/lua-language-server', -- NixOS system
+              '/home/' .. os.getenv 'USER' .. '/.nix-profile/bin/lua-language-server', -- NixOS user
+              '/usr/bin/lua-language-server', -- Most Linux distros
+              '/usr/local/bin/lua-language-server', -- macOS/manual installs
+              'lua-language-server', -- Fallback to PATH (but this will hit Mason)
+            }
+
+            for _, path in ipairs(candidates) do
+              if path == 'lua-language-server' or vim.fn.executable(path) == 1 then
+                return { path }
+              end
+            end
+
+            return { 'lua-language-server' } -- Final fallback
+          end)(),
+          settings = {
+            Lua = {
+              completion = {
+                callSnippet = 'Replace',
+              },
+            },
+          }, -- filetypes = { ... },
           -- capabilities = {},
           settings = {
             Lua = {
@@ -773,8 +783,8 @@ require('lazy').setup({
       -- You can add other tools here that you want Mason to install
       -- for you, so that they are available from within Neovim.
       local ensure_installed = vim.tbl_filter(function(server)
-  return server ~= 'lua_ls'  -- Exclude lua_ls from Mason installation
-end, vim.tbl_keys(servers or {}))      
+        return server ~= 'lua_ls' -- Exclude lua_ls from Mason installation
+      end, vim.tbl_keys(servers or {}))
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
       })
@@ -1052,7 +1062,7 @@ end, vim.tbl_keys(servers or {}))
   -- require 'kickstart.plugins.debug',
   -- require 'kickstart.plugins.indent_line',
   -- require 'kickstart.plugins.lint',
-  -- require 'kickstart.plugins.autopairs',
+  require 'kickstart.plugins.autopairs',
   -- require 'kickstart.plugins.neo-tree',
   -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
