@@ -90,6 +90,8 @@ local function is_nixos()
       vim.fn.isdirectory('/nix/var/nix/profiles/system') == 1
 end
 local use_mason = not is_nixos()
+local nix_flake_path = os.getenv("HOME") .. "/.dotfiles/flake.nix"
+
 
 
 -- Set <space> as the leader key
@@ -748,6 +750,19 @@ require('lazy').setup({
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         -- ts_ls = {},
         --
+        nixd = {
+          nixpkgs = {
+            expr = "import <nixpkgs> { }",
+          },
+          options = {
+            nixos = {
+              expr = '(builtins.getFlake "' .. nix_flake_path .. '").nixosConfigurations.hephaestus.options',
+            },
+            home_manager = {
+              expr = '(builtins.getFlake "' .. nix_flake_path .. '").homeConfigurations.hephaestus.options',
+            },
+          },
+        },
 
         lua_ls = {
           settings = {
