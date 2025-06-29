@@ -87,7 +87,7 @@ P.S. You can delete this when you're done too. It's your config now! :)
 -- Detect if we're on NixOS
 local function is_nixos()
   return vim.fn.isdirectory('/etc/nixos') == 1 or
-         vim.fn.isdirectory('/nix/var/nix/profiles/system') == 1
+      vim.fn.isdirectory('/nix/var/nix/profiles/system') == 1
 end
 local use_mason = not is_nixos()
 
@@ -192,6 +192,8 @@ end, { desc = 'Go to previous diagnostic' })
 vim.keymap.set('n', ']d', function()
   vim.diagnostic.jump({ count = 1, float = true })
 end, { desc = 'Go to next diagnostic' })
+
+vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -1051,6 +1053,17 @@ require('lazy').setup({
   require 'kickstart.plugins.autopairs',
   -- require 'kickstart.plugins.neo-tree',
   -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+  {
+    'stevearc/oil.nvim',
+    ---@module 'oil'
+    ---@type oil.SetupOpts
+    opts = {},
+    -- Optional dependencies
+    dependencies = { { "echasnovski/mini.icons", opts = {} } },
+    -- dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if you prefer nvim-web-devicons
+    -- Lazy loading is not recommended because it is very tricky to make it work correctly in all situations.
+    lazy = false,
+  },
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
