@@ -194,6 +194,18 @@ end, { desc = 'Go to next diagnostic' })
 
 vim.keymap.set('n', '-', '<CMD>Oil<CR>', { desc = 'Open parent directory' })
 
+-- Move current line down in normal mode
+vim.keymap.set('n', '<C-j>', ':m .+1<CR>==', { desc = 'Move line down' })
+
+-- Move current line up in normal mode
+vim.keymap.set('n', '<C-k>', ':m .-2<CR>==', { desc = 'Move line up' })
+
+-- Move selected block down in visual mode
+vim.keymap.set('x', '<C-j>', ":m '>+1<CR>gv=gv", { desc = 'Move block down' })
+
+-- Move selected block up in visual mode
+vim.keymap.set('x', '<C-k>', ":m '<-2<CR>gv=gv", { desc = 'Move block up' })
+
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
 -- is not what someone will guess without a bit more experience.
@@ -541,18 +553,18 @@ require('lazy').setup({
   --  },
   --},
   --
-  {
-    'yioneko/nvim-vtsls',
-    dependencies = {
-      'neovim/nvim-lspconfig',
-      'williamboman/mason.nvim',
-      'williamboman/mason-lspconfig.nvim',
-    },
-    config = function()
-      -- Optional: extra helper config, see plugin README for advanced usage
-    end,
-    ft = { 'typescript', 'typescriptreact', 'javascript', 'javascriptreact' },
-  },
+  --{
+  --  'yioneko/nvim-vtsls',
+  --  dependencies = {
+  --    'neovim/nvim-lspconfig',
+  --    'williamboman/mason.nvim',
+  --    'williamboman/mason-lspconfig.nvim',
+  --  },
+  --  config = function()
+  --    -- Optional: extra helper config, see plugin README for advanced usage
+  --  end,
+  --  ft = { 'typescript', 'typescriptreact', 'javascript', 'javascriptreact' },
+  --},
 
   {
     -- Main LSP Configuration
@@ -760,7 +772,36 @@ require('lazy').setup({
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         -- ts_ls = {},
         --
-        vtsls = {},
+        vtsls = {
+          settings = {
+            typescript = {
+              -- https://code.visualstudio.com/docs/typescript/typescript-editing#_inlay-hints
+              inlayHints = {
+                enumMemberValues = { enabled = true },
+                functionLikeReturnTypes = { enabled = true },
+                parameterNames = { enabled = 'literals' },
+                parameterTypes = { enabled = true },
+                propertyDeclarationTypes = { enabled = true },
+                variableTypes = { enabled = true },
+              },
+            },
+            vtsls = {
+              -- Automatically use workspace version of TypeScript lib on startup
+              autoUseWorkspaceTsdk = true,
+              experimental = {
+                -- Truncate inlay hint
+                -- https://github.com/neovim/neovim/issues/27240
+                maxInlayHintLength = 20000,
+                completion = {
+                  -- Execute fuzzy match of completion items on server side. Enable this
+                  -- will help filter out useless completion items from tsserver
+                  enableServerSideFuzzyMatch = true,
+                  -- entriesLimit = 200,
+                },
+              },
+            },
+          },
+        },
 
         nixd = {
           settings = {
