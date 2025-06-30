@@ -86,13 +86,10 @@ P.S. You can delete this when you're done too. It's your config now! :)
 --
 -- Detect if we're on NixOS
 local function is_nixos()
-  return vim.fn.isdirectory('/etc/nixos') == 1 or
-      vim.fn.isdirectory('/nix/var/nix/profiles/system') == 1
+  return vim.fn.isdirectory '/etc/nixos' == 1 or vim.fn.isdirectory '/nix/var/nix/profiles/system' == 1
 end
 local use_mason = not is_nixos()
-local nix_flake_path = vim.fn.expand("~/.dotfiles")
-
-
+local nix_flake_path = vim.fn.expand '~/.dotfiles'
 
 -- Set <space> as the leader key
 -- See `:help mapleader`
@@ -188,14 +185,14 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagn
 
 vim.keymap.set('n', '<leader>d', vim.diagnostic.open_float, { desc = 'Show diagnostic popup' })
 vim.keymap.set('n', '[d', function()
-  vim.diagnostic.jump({ count = -1, float = true })
+  vim.diagnostic.jump { count = -1, float = true }
 end, { desc = 'Go to previous diagnostic' })
 
 vim.keymap.set('n', ']d', function()
-  vim.diagnostic.jump({ count = 1, float = true })
+  vim.diagnostic.jump { count = 1, float = true }
 end, { desc = 'Go to next diagnostic' })
 
-vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
+vim.keymap.set('n', '-', '<CMD>Oil<CR>', { desc = 'Open parent directory' })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -298,9 +295,9 @@ require('lazy').setup({
     dependencies = {
       'nvim-treesitter/nvim-treesitter',
       'nvim-telescope/telescope.nvim', -- optional
-      'neovim/nvim-lspconfig',         -- optional
+      'neovim/nvim-lspconfig', -- optional
     },
-    opts = {},                         -- your configuration
+    opts = {}, -- your configuration
   },
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
@@ -351,7 +348,7 @@ require('lazy').setup({
   -- Then, because we use the `opts` key (recommended), the configuration runs
   -- after the plugin has been loaded as `require(MODULE).setup(opts)`.
 
-  {                     -- Useful plugin to show you pending keybinds.
+  { -- Useful plugin to show you pending keybinds.
     'folke/which-key.nvim',
     event = 'VimEnter', -- Sets the loading event to 'VimEnter'
     opts = {
@@ -432,7 +429,7 @@ require('lazy').setup({
       { 'nvim-telescope/telescope-ui-select.nvim' },
 
       -- Useful for getting pretty icons, but requires a Nerd Font.
-      { 'nvim-tree/nvim-web-devicons',            enabled = vim.g.have_nerd_font },
+      { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
     },
     config = function()
       -- Telescope is a fuzzy finder that comes with a lot of different things that
@@ -515,7 +512,6 @@ require('lazy').setup({
     end,
   },
 
-
   -- LSP Plugins
   {
     -- `lazydev` configures Lua LSP for your Neovim config, runtime and plugins
@@ -529,21 +525,35 @@ require('lazy').setup({
       },
     },
   },
+  --{
+  --  'pmizio/typescript-tools.nvim',
+  --  dependencies = { 'nvim-lua/plenary.nvim', 'neovim/nvim-lspconfig' },
+  --  ft = { 'typescript', 'typescriptreact', 'javascript', 'javascriptreact' },
+  --  opts = {
+  --    settings = {
+  --      -- Separate formatting if you want to use prettier/eslint instead
+  --      separate_diagnostic_server = true,
+  --      publish_diagnostic_on = 'insert_leave',
+  --      expose_as_code_action = 'all',
+  --      tsserver_plugins = {},
+  --      -- ... add more options as needed
+  --    },
+  --  },
+  --},
+  --
   {
-    'pmizio/typescript-tools.nvim',
-    dependencies = { 'nvim-lua/plenary.nvim', 'neovim/nvim-lspconfig' },
-    ft = { 'typescript', 'typescriptreact', 'javascript', 'javascriptreact' },
-    opts = {
-      settings = {
-        -- Separate formatting if you want to use prettier/eslint instead
-        separate_diagnostic_server = true,
-        publish_diagnostic_on = 'insert_leave',
-        expose_as_code_action = 'all',
-        tsserver_plugins = {},
-        -- ... add more options as needed
-      },
+    'yioneko/nvim-vtsls',
+    dependencies = {
+      'neovim/nvim-lspconfig',
+      'williamboman/mason.nvim',
+      'williamboman/mason-lspconfig.nvim',
     },
+    config = function()
+      -- Optional: extra helper config, see plugin README for advanced usage
+    end,
+    ft = { 'typescript', 'typescriptreact', 'javascript', 'javascriptreact' },
   },
+
   {
     -- Main LSP Configuration
     'neovim/nvim-lspconfig',
@@ -750,14 +760,16 @@ require('lazy').setup({
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         -- ts_ls = {},
         --
+        vtsls = {},
+
         nixd = {
           settings = {
             nixd = {
               nixpkgs = {
-                expr = "import <nixpkgs> { }",
+                expr = 'import <nixpkgs> { }',
               },
               formatting = {
-                command = { "alejandra" },
+                command = { 'alejandra' },
               },
               options = {
                 nixos = {
@@ -790,7 +802,7 @@ require('lazy').setup({
         })
 
         require('mason-tool-installer').setup {
-          ensure_installed = ensure_installed
+          ensure_installed = ensure_installed,
         }
 
         require('mason-lspconfig').setup {
@@ -1081,7 +1093,7 @@ require('lazy').setup({
     ---@type oil.SetupOpts
     opts = {},
     -- Optional dependencies
-    dependencies = { { "echasnovski/mini.icons", opts = {} } },
+    dependencies = { { 'echasnovski/mini.icons', opts = {} } },
     -- dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if you prefer nvim-web-devicons
     -- Lazy loading is not recommended because it is very tricky to make it work correctly in all situations.
     lazy = false,
