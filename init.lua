@@ -537,21 +537,21 @@ require('lazy').setup({
       },
     },
   },
-  --{
-  --  'pmizio/typescript-tools.nvim',
-  --  dependencies = { 'nvim-lua/plenary.nvim', 'neovim/nvim-lspconfig' },
-  --  ft = { 'typescript', 'typescriptreact', 'javascript', 'javascriptreact' },
-  --  opts = {
-  --    settings = {
-  --      -- Separate formatting if you want to use prettier/eslint instead
-  --      separate_diagnostic_server = true,
-  --      publish_diagnostic_on = 'insert_leave',
-  --      expose_as_code_action = 'all',
-  --      tsserver_plugins = {},
-  --      -- ... add more options as needed
-  --    },
-  --  },
-  --},
+  {
+    'pmizio/typescript-tools.nvim',
+    dependencies = { 'nvim-lua/plenary.nvim', 'neovim/nvim-lspconfig' },
+    ft = { 'typescript', 'typescriptreact', 'javascript', 'javascriptreact' },
+    opts = {
+      settings = {
+        -- Separate formatting if you want to use prettier/eslint instead
+        separate_diagnostic_server = true,
+        publish_diagnostic_on = 'insert_leave',
+        expose_as_code_action = 'all',
+        tsserver_plugins = {},
+        -- ... add more options as needed
+      },
+    },
+  },
   --
   --{
   --  'yioneko/nvim-vtsls',
@@ -760,50 +760,19 @@ require('lazy').setup({
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
-        -- clangd = {},
-        -- gopls = {},
-        -- pyright = {},
-        -- rust_analyzer = {},
-        -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
-        --
-        -- Some languagest (like typescript) have entire language plugins that can be useful:
-        --    https://github.com/pmizio/typescript-tools.nvim
-        --
-        -- But for many setups, the LSP (`ts_ls`) will work just fine
-        -- ts_ls = {},
-        --
-        vtsls = {
+        lua_ls = {
           settings = {
-            typescript = {
-              -- https://code.visualstudio.com/docs/typescript/typescript-editing#_inlay-hints
-              inlayHints = {
-                enumMemberValues = { enabled = true },
-                functionLikeReturnTypes = { enabled = true },
-                parameterNames = { enabled = 'literals' },
-                parameterTypes = { enabled = true },
-                propertyDeclarationTypes = { enabled = true },
-                variableTypes = { enabled = true },
-              },
-            },
-            vtsls = {
-              -- Automatically use workspace version of TypeScript lib on startup
-              autoUseWorkspaceTsdk = true,
-              experimental = {
-                -- Truncate inlay hint
-                -- https://github.com/neovim/neovim/issues/27240
-                maxInlayHintLength = 20000,
-                completion = {
-                  -- Execute fuzzy match of completion items on server side. Enable this
-                  -- will help filter out useless completion items from tsserver
-                  enableServerSideFuzzyMatch = true,
-                  -- entriesLimit = 200,
-                },
+            Lua = {
+              completion = {
+                callSnippet = 'Replace',
               },
             },
           },
         },
+      }
 
-        nixd = {
+      if is_nixos() then
+        servers.nixd = {
           settings = {
             nixd = {
               nixpkgs = {
@@ -822,18 +791,8 @@ require('lazy').setup({
               },
             },
           },
-        },
-
-        lua_ls = {
-          settings = {
-            Lua = {
-              completion = {
-                callSnippet = 'Replace',
-              },
-            },
-          },
-        },
-      }
+        }
+      end
 
       if use_mason then
         -- Mason setup for non-NixOS systems
