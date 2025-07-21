@@ -238,11 +238,11 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 -- Jump between source ↔ test
 local function toggle_test_file()
   local path = vim.api.nvim_buf_get_name(0)
-  if path:match('%.test%.ts$') or path:match('%.spec%.ts$') then
+  if path:match '%.test%.ts$' or path:match '%.spec%.ts$' then
     -- strip “.test” or “.spec”
     local src = path:gsub('%.test%.ts$', '.ts'):gsub('%.spec%.ts$', '.ts')
     vim.cmd('edit ' .. src)
-  elseif path:match('%.ts$') then
+  elseif path:match '%.ts$' then
     -- try test first, then spec
     local base = path:gsub('%.ts$', '')
     local test = base .. '.test.ts'
@@ -252,10 +252,10 @@ local function toggle_test_file()
     elseif vim.fn.filereadable(spec) == 1 then
       vim.cmd('edit ' .. spec)
     else
-      print('No test/spec file found')
+      print 'No test/spec file found'
     end
   else
-    print('Not a TypeScript file')
+    print 'Not a TypeScript file'
   end
 end
 
@@ -343,9 +343,20 @@ require('lazy').setup({
     dependencies = {
       'nvim-treesitter/nvim-treesitter',
       'nvim-telescope/telescope.nvim', -- optional
-      'neovim/nvim-lspconfig',         -- optional
+      'neovim/nvim-lspconfig', -- optional
     },
-    opts = {},                         -- your configuration
+    opts = {}, -- your configuration
+  },
+  {
+    'rachartier/tiny-inline-diagnostic.nvim',
+    event = 'VeryLazy', -- Or `LspAttach`
+    priority = 1000, -- needs to be loaded in first
+    config = function()
+      require('tiny-inline-diagnostic').setup {
+        preset = 'classic',
+      }
+      vim.diagnostic.config { virtual_text = false } -- Only if needed in your configuration, if you already have native LSP diagnostics
+    end,
   },
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
@@ -396,7 +407,7 @@ require('lazy').setup({
   -- Then, because we use the `opts` key (recommended), the configuration runs
   -- after the plugin has been loaded as `require(MODULE).setup(opts)`.
 
-  {                     -- Useful plugin to show you pending keybinds.
+  { -- Useful plugin to show you pending keybinds.
     'folke/which-key.nvim',
     event = 'VimEnter', -- Sets the loading event to 'VimEnter'
     opts = {
@@ -477,7 +488,7 @@ require('lazy').setup({
       { 'nvim-telescope/telescope-ui-select.nvim' },
 
       -- Useful for getting pretty icons, but requires a Nerd Font.
-      { 'nvim-tree/nvim-web-devicons',            enabled = vim.g.have_nerd_font },
+      { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
     },
     config = function()
       -- Telescope is a fuzzy finder that comes with a lot of different things that
@@ -776,12 +787,12 @@ require('lazy').setup({
             },
           },
         },
-        ts_ls = {}
+        ts_ls = {},
       }
 
       if is_nixos() then
         servers.nixd = {
-          cmd = { "nixd" },
+          cmd = { 'nixd' },
           settings = {
             nixd = {
               nixpkgs = {
@@ -790,14 +801,14 @@ require('lazy').setup({
                 -- Nixd provides package, lib completion/information from it.
                 -- Resource Usage: Entries are lazily evaluated, entire nixpkgs takes 200~300MB for just "names".
                 -- Package documentation, versions, are evaluated by-need.
-                expr = "import (builtins.getFlake(toString ./.)).inputs.nixpkgs { }",
+                expr = 'import (builtins.getFlake(toString ./.)).inputs.nixpkgs { }',
               },
               formatting = {
-                command = { "alejandra" },
+                command = { 'alejandra' },
               },
               options = {
                 nixos = {
-                  expr = "let flake = builtins.getFlake(toString ./.); in flake.nixosConfigurations.hephaestus.options",
+                  expr = 'let flake = builtins.getFlake(toString ./.); in flake.nixosConfigurations.hephaestus.options',
                 },
                 -- Current setup uses home-manager as module not standalone so homeConfigurations doesn't exist
               },
@@ -993,7 +1004,7 @@ require('lazy').setup({
   },
 
   -- Highlight todo, notes, etc in comments
-  { 'folke/todo-comments.nvim',                event = 'VimEnter',      dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = true } },
+  { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = true } },
 
   { -- Collection of various small independent plugins/modules
     'echasnovski/mini.nvim',
@@ -1058,9 +1069,23 @@ require('lazy').setup({
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
       ensure_installed = {
-        'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline',
-        'query', 'vim', 'vimdoc', 'nix', 'json', 'yaml', 'toml',
-        'javascript', 'typescript',
+        'bash',
+        'c',
+        'diff',
+        'html',
+        'lua',
+        'luadoc',
+        'markdown',
+        'markdown_inline',
+        'query',
+        'vim',
+        'vimdoc',
+        'nix',
+        'json',
+        'yaml',
+        'toml',
+        'javascript',
+        'typescript',
         'tsx',
       }, -- Autoinstall languages that are not installed
       auto_install = true,
@@ -1104,18 +1129,16 @@ require('lazy').setup({
     opts = {},
     -- Optional dependencies
     -- dependencies = { { 'echasnovski/mini.icons', opts = {} } },
-    dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if you prefer nvim-web-devicons
+    dependencies = { 'nvim-tree/nvim-web-devicons' }, -- use if you prefer nvim-web-devicons
     -- Lazy loading is not recommended because it is very tricky to make it work correctly in all situations.
     lazy = false,
   },
   {
     'MagicDuck/grug-far.nvim',
     config = function()
-      require('grug-far').setup({
-
-      })
-    end
-  }
+      require('grug-far').setup {}
+    end,
+  },
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
