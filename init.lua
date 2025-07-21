@@ -235,6 +235,33 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 -- vim.keymap.set("n", "<C-S-j>", "<C-w>J", { desc = "Move window to the lower" })
 -- vim.keymap.set("n", "<C-S-k>", "<C-w>K", { desc = "Move window to the upper" })
 
+-- Jump between source ↔ test
+local function toggle_test_file()
+  local path = vim.api.nvim_buf_get_name(0)
+  if path:match('%.test%.ts$') or path:match('%.spec%.ts$') then
+    -- strip “.test” or “.spec”
+    local src = path:gsub('%.test%.ts$', '.ts'):gsub('%.spec%.ts$', '.ts')
+    vim.cmd('edit ' .. src)
+  elseif path:match('%.ts$') then
+    -- try test first, then spec
+    local base = path:gsub('%.ts$', '')
+    local test = base .. '.test.ts'
+    local spec = base .. '.spec.ts'
+    if vim.fn.filereadable(test) == 1 then
+      vim.cmd('edit ' .. test)
+    elseif vim.fn.filereadable(spec) == 1 then
+      vim.cmd('edit ' .. spec)
+    else
+      print('No test/spec file found')
+    end
+  else
+    print('Not a TypeScript file')
+  end
+end
+
+-- Map it (e.g. <leader>tf)
+vim.keymap.set('n', '<leader>tf', toggle_test_file, { desc = '[T]oggle TS test [f]ile' })
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -251,6 +278,16 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 
 vim.api.nvim_create_autocmd('FileType', {
   pattern = { 'typescript', 'javascript', 'typescriptreact', 'javascriptreact' },
+  callback = function()
+    vim.opt_local.expandtab = true
+    vim.opt_local.tabstop = 2
+    vim.opt_local.shiftwidth = 2
+    vim.opt_local.softtabstop = 2
+  end,
+})
+
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = { 'nix' },
   callback = function()
     vim.opt_local.expandtab = true
     vim.opt_local.tabstop = 2
@@ -288,7 +325,6 @@ rtp:prepend(lazypath)
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'NMAC427/guess-indent.nvim', -- Detect tabstop and shiftwidth automatically
-  'numToStr/Comment.nvim',
   {
     'catppuccin/nvim',
     name = 'catppuccin',
@@ -538,35 +574,6 @@ require('lazy').setup({
     },
   },
   {
-    'pmizio/typescript-tools.nvim',
-    dependencies = { 'nvim-lua/plenary.nvim', 'neovim/nvim-lspconfig' },
-    ft = { 'typescript', 'typescriptreact', 'javascript', 'javascriptreact' },
-    opts = {
-      settings = {
-        -- Separate formatting if you want to use prettier/eslint instead
-        separate_diagnostic_server = true,
-        publish_diagnostic_on = 'insert_leave',
-        expose_as_code_action = 'all',
-        tsserver_plugins = {},
-        -- ... add more options as needed
-      },
-    },
-  },
-  --
-  --{
-  --  'yioneko/nvim-vtsls',
-  --  dependencies = {
-  --    'neovim/nvim-lspconfig',
-  --    'williamboman/mason.nvim',
-  --    'williamboman/mason-lspconfig.nvim',
-  --  },
-  --  config = function()
-  --    -- Optional: extra helper config, see plugin README for advanced usage
-  --  end,
-  --  ft = { 'typescript', 'typescriptreact', 'javascript', 'javascriptreact' },
-  --},
-
-  {
     -- Main LSP Configuration
     'neovim/nvim-lspconfig',
     dependencies = vim.tbl_extend('force', {
@@ -769,25 +776,30 @@ require('lazy').setup({
             },
           },
         },
+        ts_ls = {}
       }
 
       if is_nixos() then
         servers.nixd = {
+          cmd = { "nixd" },
           settings = {
             nixd = {
               nixpkgs = {
-                expr = 'import <nixpkgs> { }',
+                -- For flake.
+                -- This expression will be interpreted as "nixpkgs" toplevel
+                -- Nixd provides package, lib completion/information from it.
+                -- Resource Usage: Entries are lazily evaluated, entire nixpkgs takes 200~300MB for just "names".
+                -- Package documentation, versions, are evaluated by-need.
+                expr = "import (builtins.getFlake(toString ./.)).inputs.nixpkgs { }",
               },
               formatting = {
-                command = { 'alejandra' },
+                command = { "alejandra" },
               },
               options = {
                 nixos = {
-                  expr = '(builtins.getFlake ("git+file://" + toString ./.)).nixosConfigurations.hephaestus.options',
+                  expr = "let flake = builtins.getFlake(toString ./.); in flake.nixosConfigurations.hephaestus.options",
                 },
-                home_manager = {
-                  expr = '(builtins.getFlake ("git+file://" + toString ./.)).homeConfigurations.hephaestus.options',
-                },
+                -- Current setup uses home-manager as module not standalone so homeConfigurations doesn't exist
               },
             },
           },
@@ -955,18 +967,18 @@ require('lazy').setup({
       completion = {
         -- By default, you may press `<c-space>` to show the documentation.
         -- Optionally, set `auto_show = true` to show the documentation after a delay.
-        documentation = { auto_show = false, auto_show_delay_ms = 500 },
+        documentation = { auto_show = true, auto_show_delay_ms = 500 },
       },
       sources = {
-        default = { 'lsp', 'path', 'snippets', 'lazydev' },
+        default = { 'lsp', 'path', 'lazydev', 'snippets' },
         providers = {
           lazydev = { module = 'lazydev.integrations.blink', score_offset = 100 },
           -- Prioritise LSP completions over snippets when typing after a dot
           lsp = { score_offset = 50 },
-          snippets = { score_offset = -10 },
+          snippets = { score_offset = -100 },
         },
       },
-      snippets = { preset = 'luasnip' },
+      snippets = { preset = 'default' },
       -- Blink.cmp includes an optional, recommended rust fuzzy matcher,
       -- which automatically downloads a prebuilt binary when enabled.
       --
@@ -974,14 +986,14 @@ require('lazy').setup({
       -- the rust implementation via `'prefer_rust_with_warning'`
       --
       -- See :h blink-cmp-config-fuzzy for more information
-      fuzzy = { implementation = 'lua' },
+      fuzzy = { implementation = 'prefer_rust' },
       -- Shows a signature help window while you type arguments for a function
       signature = { enabled = true },
     },
   },
 
   -- Highlight todo, notes, etc in comments
-  { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
+  { 'folke/todo-comments.nvim',                event = 'VimEnter',      dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = true } },
 
   { -- Collection of various small independent plugins/modules
     'echasnovski/mini.nvim',
@@ -1000,6 +1012,25 @@ require('lazy').setup({
       -- - sd'   - [S]urround [D]elete [']quotes
       -- - sr)'  - [S]urround [R]eplace [)] [']
       require('mini.surround').setup()
+
+      -- Comment elements
+      --
+      -- - `gcc`   - Comment current line
+      -- - visual + `gc` - Comment selection
+      -- - `}gc`   - Comment until next paragraph
+      require('mini.comment').setup()
+
+      -- Automatically add closing brackets, quotes, etc.
+      --
+      -- - Typing `(` inserts `()`
+      -- - Typing `"` inserts `""`
+      require('mini.pairs').setup()
+
+      -- Visualises the current indentation scope (thin guide line).
+      --
+      -- - Shows the parent indent block you are inside
+      -- - Useful for code nesting
+      require('mini.indentscope').setup()
 
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
@@ -1026,8 +1057,12 @@ require('lazy').setup({
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
-      -- Autoinstall languages that are not installed
+      ensure_installed = {
+        'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline',
+        'query', 'vim', 'vimdoc', 'nix', 'json', 'yaml', 'toml',
+        'javascript', 'typescript',
+        'tsx',
+      }, -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
         enable = true,
@@ -1045,6 +1080,7 @@ require('lazy').setup({
     --    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
     --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
   },
+  { 'nvim-treesitter/nvim-treesitter-context', opts = { enable = true } },
 
   -- The following comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
@@ -1058,7 +1094,7 @@ require('lazy').setup({
   -- require 'kickstart.plugins.debug',
   -- require 'kickstart.plugins.indent_line',
   -- require 'kickstart.plugins.lint',
-  require 'kickstart.plugins.autopairs',
+  -- require 'kickstart.plugins.autopairs',
   -- require 'kickstart.plugins.neo-tree',
   -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
   {
@@ -1067,8 +1103,8 @@ require('lazy').setup({
     ---@type oil.SetupOpts
     opts = {},
     -- Optional dependencies
-    dependencies = { { 'echasnovski/mini.icons', opts = {} } },
-    -- dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if you prefer nvim-web-devicons
+    -- dependencies = { { 'echasnovski/mini.icons', opts = {} } },
+    dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if you prefer nvim-web-devicons
     -- Lazy loading is not recommended because it is very tricky to make it work correctly in all situations.
     lazy = false,
   },
