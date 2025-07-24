@@ -148,6 +148,11 @@ vim.o.timeoutlen = 300
 vim.o.splitright = true
 vim.o.splitbelow = true
 
+-- Configures the spellchecker
+vim.o.spelllang = 'en_au'
+vim.o.spell = false -- Off by default, activate via toggle bind
+vim.o.spelloptions = 'noplainbuffer'
+
 -- Sets how neovim will display certain whitespace characters in the editor.
 --  See `:help 'list'`
 --  and `:help 'listchars'`
@@ -260,7 +265,14 @@ local function toggle_test_file()
 end
 
 -- Map it (e.g. <leader>tf)
-vim.keymap.set('n', '<leader>tf', toggle_test_file, { desc = '[T]oggle TS test [f]ile' })
+vim.keymap.set('n', '<leader>tt', toggle_test_file, { desc = '[T]oggle TS [t]est file' })
+
+vim.keymap.set('n', '<leader>ts', function()
+  vim.wo.spell = not vim.wo.spell
+  vim.cmd 'redraw' -- Ensures immediate screen redraw[1]
+  local msg = vim.wo.spell and 'Spell check ON' or 'Spell check OFF'
+  vim.notify(msg)
+end, { desc = '[T]oggle [s]pell check' })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -1137,6 +1149,33 @@ require('lazy').setup({
     'MagicDuck/grug-far.nvim',
     config = function()
       require('grug-far').setup {}
+    end,
+  },
+  {
+    'NeogitOrg/neogit',
+    dependencies = {
+      'nvim-lua/plenary.nvim', -- required
+      'sindrets/diffview.nvim', -- optional - Diff integration
+
+      -- Only one of these is needed.
+      'nvim-telescope/telescope.nvim', -- optional
+      -- 'ibhagwan/fzf-lua', -- optional
+      -- 'echasnovski/mini.pick', -- optional
+      -- 'folke/snacks.nvim', -- optional
+    },
+    config = function()
+      local neogit = require 'neogit'
+      vim.keymap.set('n', '<leader>gs', neogit.open, { silent = true, noremap = true, desc = '[g]it [s]creen Open' })
+
+      vim.keymap.set('n', '<leader>gc', ':Neogit commit<CR>', { silent = true, noremap = true, desc = '[g]it [c]ommit' })
+
+      vim.keymap.set('n', '<leader>gp', ':Neogit pull<CR>', { silent = true, noremap = true, desc = '[g]it [p]ull' })
+
+      vim.keymap.set('n', '<leader>gP', ':Neogit push<CR>', { silent = true, noremap = true, desc = '[g]it [P]ush' })
+
+      vim.keymap.set('n', '<leader>gb', ':Telescope git_branches<CR>', { silent = true, noremap = true, desc = '[g]it [b]ranch' })
+
+      vim.keymap.set('n', '<leader>gB', ':G blame<CR>', { silent = true, noremap = true, desc = '[g]it [B]lame' })
     end,
   },
 
