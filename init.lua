@@ -1119,6 +1119,32 @@ require('lazy').setup({
     --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
   },
   { 'nvim-treesitter/nvim-treesitter-context', opts = { enable = true } },
+  {
+    'nvim-treesitter/nvim-treesitter-textobjects',
+    dependencies = { 'nvim-treesitter/nvim-treesitter' },
+    event = 'VeryLazy', -- or another lazy loading event
+    opts = {
+      select = {
+        enable = true,
+        lookahead = true,             -- jump to textobj automatically
+        keymaps = {
+          ["af"] = "@function.outer", -- around function (outer)
+          ["if"] = "@function.inner", -- inner function (body)
+          ["ac"] = "@class.outer",
+          ["ic"] = "@class.inner",
+          -- add more text objects if needed
+        },
+        include_surrounding_whitespace = true,
+        selection_modes = {
+          ['@parameter.outer'] = 'v', -- charwise
+          ['@function.outer'] = 'V',  -- linewise
+          ['@class.outer'] = '<c-v>', -- blockwise
+        },
+      },
+      -- You can also configure swap, move, and peek features here if desired
+    },
+  },
+
 
   -- The following comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
