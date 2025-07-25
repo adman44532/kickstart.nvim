@@ -355,14 +355,14 @@ require('lazy').setup({
     dependencies = {
       'nvim-treesitter/nvim-treesitter',
       'nvim-telescope/telescope.nvim', -- optional
-      'neovim/nvim-lspconfig', -- optional
+      'neovim/nvim-lspconfig',         -- optional
     },
-    opts = {}, -- your configuration
+    opts = {},                         -- your configuration
   },
   {
     'rachartier/tiny-inline-diagnostic.nvim',
     event = 'VeryLazy', -- Or `LspAttach`
-    priority = 1000, -- needs to be loaded in first
+    priority = 1000,    -- needs to be loaded in first
     config = function()
       require('tiny-inline-diagnostic').setup {
         preset = 'classic',
@@ -419,7 +419,7 @@ require('lazy').setup({
   -- Then, because we use the `opts` key (recommended), the configuration runs
   -- after the plugin has been loaded as `require(MODULE).setup(opts)`.
 
-  { -- Useful plugin to show you pending keybinds.
+  {                     -- Useful plugin to show you pending keybinds.
     'folke/which-key.nvim',
     event = 'VimEnter', -- Sets the loading event to 'VimEnter'
     opts = {
@@ -500,7 +500,7 @@ require('lazy').setup({
       { 'nvim-telescope/telescope-ui-select.nvim' },
 
       -- Useful for getting pretty icons, but requires a Nerd Font.
-      { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
+      { 'nvim-tree/nvim-web-devicons',            enabled = vim.g.have_nerd_font },
     },
     config = function()
       -- Telescope is a fuzzy finder that comes with a lot of different things that
@@ -1016,7 +1016,7 @@ require('lazy').setup({
   },
 
   -- Highlight todo, notes, etc in comments
-  { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = true } },
+  { 'folke/todo-comments.nvim',                event = 'VimEnter',      dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = true } },
 
   { -- Collection of various small independent plugins/modules
     'echasnovski/mini.nvim',
@@ -1154,7 +1154,7 @@ require('lazy').setup({
   {
     'NeogitOrg/neogit',
     dependencies = {
-      'nvim-lua/plenary.nvim', -- required
+      'nvim-lua/plenary.nvim',  -- required
       'sindrets/diffview.nvim', -- optional - Diff integration
 
       -- Only one of these is needed.
@@ -1173,10 +1173,20 @@ require('lazy').setup({
 
       vim.keymap.set('n', '<leader>gP', ':Neogit push<CR>', { silent = true, noremap = true, desc = '[g]it [P]ush' })
 
-      vim.keymap.set('n', '<leader>gb', ':Telescope git_branches<CR>', { silent = true, noremap = true, desc = '[g]it [b]ranch' })
+      vim.keymap.set('n', '<leader>gb', ':Telescope git_branches<CR>',
+        { silent = true, noremap = true, desc = '[g]it [b]ranch' })
 
       vim.keymap.set('n', '<leader>gB', ':G blame<CR>', { silent = true, noremap = true, desc = '[g]it [B]lame' })
     end,
+  },
+  {
+    'MeanderingProgrammer/render-markdown.nvim',
+    dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.nvim' }, -- if you use the mini.nvim suite
+    -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' }, -- if you use standalone mini plugins
+    -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' }, -- if you prefer nvim-web-devicons
+    ---@module 'render-markdown'
+    ---@type render.md.UserConfig
+    opts = {},
   },
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
