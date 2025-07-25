@@ -1099,6 +1099,7 @@ require('lazy').setup({
         'javascript',
         'typescript',
         'tsx',
+        'gitcommit'
       }, -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
