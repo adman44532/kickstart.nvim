@@ -355,14 +355,14 @@ require('lazy').setup({
     dependencies = {
       'nvim-treesitter/nvim-treesitter',
       'nvim-telescope/telescope.nvim', -- optional
-      'neovim/nvim-lspconfig',         -- optional
+      'neovim/nvim-lspconfig', -- optional
     },
-    opts = {},                         -- your configuration
+    opts = {}, -- your configuration
   },
   {
     'rachartier/tiny-inline-diagnostic.nvim',
     event = 'VeryLazy', -- Or `LspAttach`
-    priority = 1000,    -- needs to be loaded in first
+    priority = 1000, -- needs to be loaded in first
     config = function()
       require('tiny-inline-diagnostic').setup {
         preset = 'classic',
@@ -419,7 +419,7 @@ require('lazy').setup({
   -- Then, because we use the `opts` key (recommended), the configuration runs
   -- after the plugin has been loaded as `require(MODULE).setup(opts)`.
 
-  {                     -- Useful plugin to show you pending keybinds.
+  { -- Useful plugin to show you pending keybinds.
     'folke/which-key.nvim',
     event = 'VimEnter', -- Sets the loading event to 'VimEnter'
     opts = {
@@ -500,7 +500,7 @@ require('lazy').setup({
       { 'nvim-telescope/telescope-ui-select.nvim' },
 
       -- Useful for getting pretty icons, but requires a Nerd Font.
-      { 'nvim-tree/nvim-web-devicons',            enabled = vim.g.have_nerd_font },
+      { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
     },
     config = function()
       -- Telescope is a fuzzy finder that comes with a lot of different things that
@@ -1016,7 +1016,7 @@ require('lazy').setup({
   },
 
   -- Highlight todo, notes, etc in comments
-  { 'folke/todo-comments.nvim',                event = 'VimEnter',      dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = true } },
+  { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = true } },
 
   { -- Collection of various small independent plugins/modules
     'echasnovski/mini.nvim',
@@ -1099,7 +1099,7 @@ require('lazy').setup({
         'javascript',
         'typescript',
         'tsx',
-        'gitcommit'
+        'gitcommit',
       }, -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -1120,31 +1120,38 @@ require('lazy').setup({
   },
   { 'nvim-treesitter/nvim-treesitter-context', opts = { enable = true } },
   {
-    'nvim-treesitter/nvim-treesitter-textobjects',
-    dependencies = { 'nvim-treesitter/nvim-treesitter' },
-    event = 'VeryLazy', -- or another lazy loading event
+    'nvim-treesitter/nvim-treesitter',
+    build = ':TSUpdate',
+    event = { 'BufReadPost', 'BufNewFile' },
+    dependencies = { 'nvim-treesitter/nvim-treesitter-textobjects' },
     opts = {
-      select = {
-        enable = true,
-        lookahead = true,             -- jump to textobj automatically
-        keymaps = {
-          ["af"] = "@function.outer", -- around function (outer)
-          ["if"] = "@function.inner", -- inner function (body)
-          ["ac"] = "@class.outer",
-          ["ic"] = "@class.inner",
-          -- add more text objects if needed
+      highlight = { enable = true },
+      indent = { enable = true },
+      -- All your textobject stuff goes HERE:
+      textobjects = {
+        select = {
+          enable = true,
+          lookahead = true, -- Automatically jump forward to textobj
+          keymaps = {
+            ['af'] = '@function.outer',
+            ['if'] = '@function.inner',
+            ['ac'] = '@class.outer',
+            ['ic'] = '@class.inner',
+          },
+          include_surrounding_whitespace = true,
+          selection_modes = {
+            ['@parameter.outer'] = 'v',
+            ['@function.outer'] = 'V',
+            ['@class.outer'] = '<c-v>',
+          },
         },
-        include_surrounding_whitespace = true,
-        selection_modes = {
-          ['@parameter.outer'] = 'v', -- charwise
-          ['@function.outer'] = 'V',  -- linewise
-          ['@class.outer'] = '<c-v>', -- blockwise
-        },
+        -- (optional: add other modules such as move/swap here)
       },
-      -- You can also configure swap, move, and peek features here if desired
     },
+    config = function(_, opts)
+      require('nvim-treesitter.configs').setup(opts)
+    end,
   },
-
 
   -- The following comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
@@ -1181,7 +1188,7 @@ require('lazy').setup({
   {
     'NeogitOrg/neogit',
     dependencies = {
-      'nvim-lua/plenary.nvim',  -- required
+      'nvim-lua/plenary.nvim', -- required
       'sindrets/diffview.nvim', -- optional - Diff integration
 
       -- Only one of these is needed.
@@ -1200,8 +1207,7 @@ require('lazy').setup({
 
       vim.keymap.set('n', '<leader>gP', ':Neogit push<CR>', { silent = true, noremap = true, desc = '[g]it [P]ush' })
 
-      vim.keymap.set('n', '<leader>gb', ':Telescope git_branches<CR>',
-        { silent = true, noremap = true, desc = '[g]it [b]ranch' })
+      vim.keymap.set('n', '<leader>gb', ':Telescope git_branches<CR>', { silent = true, noremap = true, desc = '[g]it [b]ranch' })
 
       vim.keymap.set('n', '<leader>gB', ':G blame<CR>', { silent = true, noremap = true, desc = '[g]it [B]lame' })
     end,
