@@ -240,27 +240,55 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 -- vim.keymap.set("n", "<C-S-j>", "<C-w>J", { desc = "Move window to the lower" })
 -- vim.keymap.set("n", "<C-S-k>", "<C-w>K", { desc = "Move window to the upper" })
 
--- Jump between source ↔ test
+-- Jump between source ↔ test with creation option
 local function toggle_test_file()
   local path = vim.api.nvim_buf_get_name(0)
-  if path:match '%.test%.ts$' or path:match '%.spec%.ts$' then
-    -- strip “.test” or “.spec”
-    local src = path:gsub('%.test%.ts$', '.ts'):gsub('%.spec%.ts$', '.ts')
+
+  -- Check if current file is a test file
+  if path:match '%.e2e%.test%.ts$' or path:match '%.e2e%.test%.js$' then
+    local src = path:gsub('%.e2e%.test%.ts$', '.ts'):gsub('%.e2e%.test%.js$', '.js')
     vim.cmd('edit ' .. src)
-  elseif path:match '%.ts$' then
-    -- try test first, then spec
-    local base = path:gsub('%.ts$', '')
-    local test = base .. '.test.ts'
-    local spec = base .. '.spec.ts'
-    if vim.fn.filereadable(test) == 1 then
-      vim.cmd('edit ' .. test)
-    elseif vim.fn.filereadable(spec) == 1 then
-      vim.cmd('edit ' .. spec)
-    else
-      print 'No test/spec file found'
+  elseif path:match '%.integration%.test%.ts$' or path:match '%.integration%.test%.js$' then
+    local src = path:gsub('%.integration%.test%.ts$', '.ts'):gsub('%.integration%.test%.js$', '.js')
+    vim.cmd('edit ' .. src)
+  elseif path:match '%.test%.ts$' or path:match '%.test%.js$' then
+    local src = path:gsub('%.test%.ts$', '.ts'):gsub('%.test%.js$', '.js')
+    vim.cmd('edit ' .. src)
+  elseif path:match '%.spec%.ts$' or path:match '%.spec%.js$' then
+    local src = path:gsub('%.spec%.ts$', '.ts'):gsub('%.spec%.js$', '.js')
+    vim.cmd('edit ' .. src)
+  elseif path:match '%.ts$' or path:match '%.js$' then
+    -- Current file is source, try to find test files
+    local base = path:gsub('%.ts$', ''):gsub('%.js$', '')
+    local ext = path:match '%.ts$' and '.ts' or '.js'
+
+    local test_variants = {
+      base .. '.test' .. ext,
+      base .. '.integration.test' .. ext,
+      base .. '.e2e.test' .. ext,
+      base .. '.spec' .. ext,
+    }
+
+    for _, test_file in ipairs(test_variants) do
+      if vim.fn.filereadable(test_file) == 1 then
+        vim.cmd('edit ' .. test_file)
+        return
+      end
+    end
+
+    -- No test file found, offer to create one
+    local choice = vim.fn.input 'No test file found. Create (u)nit/(i)ntegration/(e)2e/(n)one? (n/u/i/e): '
+    if choice == 'n' or choice == '' then
+      print 'No test file created'
+    elseif choice == 'u' then
+      vim.cmd('edit ' .. base .. '.test' .. ext)
+    elseif choice == 'i' then
+      vim.cmd('edit ' .. base .. '.integration.test' .. ext)
+    elseif choice == 'e' then
+      vim.cmd('edit ' .. base .. '.e2e.test' .. ext)
     end
   else
-    print 'Not a TypeScript file'
+    print 'Not a TypeScript or JavaScript file'
   end
 end
 
@@ -533,7 +561,11 @@ require('lazy').setup({
         --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
         --   },
         -- },
-        -- pickers = {}
+        pickers = {
+          find_files = {
+            hidden = true,
+          },
+        },
         extensions = {
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
@@ -952,6 +984,16 @@ require('lazy').setup({
         opts = {},
       },
       'folke/lazydev.nvim',
+      {
+        'supermaven-inc/supermaven-nvim',
+        opts = {
+          disable_inline_completion = true, -- disables inline completion for use with cmp
+          disable_keymaps = true, -- disables built in keymaps for more manual control
+        },
+      },
+      {
+        'huijiro/blink-cmp-supermaven',
+      },
     },
     --- @module 'blink.cmp'
     --- @type blink.cmp.Config
@@ -993,12 +1035,17 @@ require('lazy').setup({
         documentation = { auto_show = true, auto_show_delay_ms = 500 },
       },
       sources = {
-        default = { 'lsp', 'path', 'lazydev', 'snippets' },
+        default = { 'lsp', 'path', 'supermaven', 'lazydev', 'snippets' },
         providers = {
           lazydev = { module = 'lazydev.integrations.blink', score_offset = 100 },
           -- Prioritise LSP completions over snippets when typing after a dot
           lsp = { score_offset = 50 },
           snippets = { score_offset = -100 },
+          supermaven = {
+            name = 'supermaven',
+            module = 'blink-cmp-supermaven',
+            async = true,
+          },
         },
       },
       snippets = { preset = 'default' },
@@ -1172,7 +1219,11 @@ require('lazy').setup({
     'stevearc/oil.nvim',
     ---@module 'oil'
     ---@type oil.SetupOpts
-    opts = {},
+    opts = {
+      view_options = {
+        show_hidden = true,
+      },
+    },
     -- Optional dependencies
     -- dependencies = { { 'echasnovski/mini.icons', opts = {} } },
     dependencies = { 'nvim-tree/nvim-web-devicons' }, -- use if you prefer nvim-web-devicons
