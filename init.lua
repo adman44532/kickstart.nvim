@@ -957,6 +957,7 @@ require('lazy').setup({
     event = 'VimEnter',
     version = '1.*',
     dependencies = {
+      'Kaiser-Yang/blink-cmp-avante',
       -- Snippet Engine
       {
         'L3MON4D3/LuaSnip',
@@ -984,16 +985,6 @@ require('lazy').setup({
         opts = {},
       },
       'folke/lazydev.nvim',
-      {
-        'supermaven-inc/supermaven-nvim',
-        opts = {
-          disable_inline_completion = true, -- disables inline completion for use with cmp
-          disable_keymaps = true, -- disables built in keymaps for more manual control
-        },
-      },
-      {
-        'huijiro/blink-cmp-supermaven',
-      },
     },
     --- @module 'blink.cmp'
     --- @type blink.cmp.Config
@@ -1035,16 +1026,18 @@ require('lazy').setup({
         documentation = { auto_show = true, auto_show_delay_ms = 500 },
       },
       sources = {
-        default = { 'lsp', 'path', 'supermaven', 'lazydev', 'snippets' },
+        default = { 'avante', 'lsp', 'path', 'lazydev', 'snippets' },
         providers = {
           lazydev = { module = 'lazydev.integrations.blink', score_offset = 100 },
           -- Prioritise LSP completions over snippets when typing after a dot
           lsp = { score_offset = 50 },
           snippets = { score_offset = -100 },
-          supermaven = {
-            name = 'supermaven',
-            module = 'blink-cmp-supermaven',
-            async = true,
+          avante = {
+            module = 'blink-cmp-avante',
+            name = 'Avante',
+            opts = {
+              -- options for blink-cmp-avante
+            },
           },
         },
       },
@@ -1082,6 +1075,11 @@ require('lazy').setup({
       -- - sd'   - [S]urround [D]elete [']quotes
       -- - sr)'  - [S]urround [R]eplace [)] [']
       require('mini.surround').setup()
+
+      require('mini.diff').setup {
+        -- Disabled by default
+        source = require('mini.diff').gen_source.none(),
+      }
 
       -- Comment elements
       --
@@ -1264,13 +1262,83 @@ require('lazy').setup({
     end,
   },
   {
-    'MeanderingProgrammer/render-markdown.nvim',
-    dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.nvim' }, -- if you use the mini.nvim suite
-    -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' }, -- if you use standalone mini plugins
-    -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' }, -- if you prefer nvim-web-devicons
-    ---@module 'render-markdown'
-    ---@type render.md.UserConfig
-    opts = {},
+    'ravitemer/mcphub.nvim',
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+    },
+    build = 'npm install -g mcp-hub@latest', -- Installs `mcp-hub` node binary globally
+    config = function()
+      require('mcphub').setup()
+    end,
+  },
+  {
+    'yetone/avante.nvim',
+    -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
+    -- ⚠️ must add this setting! ! !
+    build = vim.fn.has 'win32' ~= 0 and 'powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false' or 'make',
+    event = 'VeryLazy',
+    version = false, -- Never set this value to "*"! Never!
+    ---@module 'avante'
+    ---@type avante.Config
+    opts = {
+      provider = 'copilot',
+    },
+    config = function()
+      require('avante').setup {
+        -- system_prompt as function ensures LLM always has latest MCP server state
+        -- This is evaluated for every message, even in existing chats
+        system_prompt = function()
+          local hub = require('mcphub').get_hub_instance()
+          return hub and hub:get_active_servers_prompt() or ''
+        end,
+        -- Using function prevents requiring mcphub before it's loaded
+        custom_tools = function()
+          return {
+            require('mcphub.extensions.avante').mcp_tool(),
+          }
+        end,
+      }
+    end,
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+      'MunifTanjim/nui.nvim',
+      --- The below dependencies are optional,
+      'nvim-telescope/telescope.nvim', -- for file_selector provider telescope
+      'nvim-tree/nvim-web-devicons', -- or echasnovski/mini.icons
+      'zbirenbaum/copilot.lua', -- for providers='copilot'
+      {
+        -- support for image pasting
+        'HakonHarnes/img-clip.nvim',
+        event = 'VeryLazy',
+        opts = {
+          -- recommended settings
+          default = {
+            embed_image_as_base64 = false,
+            prompt_for_file_name = false,
+            drag_and_drop = {
+              insert_mode = true,
+            },
+            -- required for Windows users
+            use_absolute_path = true,
+          },
+        },
+      },
+      {
+        -- Make sure to set this up properly if you have lazy=true
+        'MeanderingProgrammer/render-markdown.nvim',
+        opts = {
+          file_types = { 'markdown', 'Avante' },
+        },
+        ft = { 'markdown', 'Avante' },
+      },
+    },
+  },
+  {
+    'windwp/nvim-ts-autotag',
+    ft = { 'javascript', 'javascriptreact', 'typescript', 'typescriptreact' },
+    config = function()
+      require('nvim-ts-autotag').setup()
+    end,
   },
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
