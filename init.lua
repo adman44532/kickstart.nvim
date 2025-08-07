@@ -1305,7 +1305,14 @@ require('lazy').setup({
       --- The below dependencies are optional,
       'nvim-telescope/telescope.nvim', -- for file_selector provider telescope
       'nvim-tree/nvim-web-devicons', -- or echasnovski/mini.icons
-      'zbirenbaum/copilot.lua', -- for providers='copilot'
+      {
+        'zbirenbaum/copilot.lua', -- for providers='copilot'
+        cmd = 'Copilot',
+        event = 'InsertEnter',
+        config = function()
+          require('copilot').setup {}
+        end,
+      },
       {
         -- support for image pasting
         'HakonHarnes/img-clip.nvim',
